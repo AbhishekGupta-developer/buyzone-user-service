@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ServerController {
     @GetMapping
     public ResponseEntity<String> getServerStatus() {
-        return new ResponseEntity<>("Server is live!", HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>("Buyzone - user-service is live!", HttpStatusCode.valueOf(200));
     }
 }
