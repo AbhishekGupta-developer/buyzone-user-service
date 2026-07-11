@@ -4,9 +4,11 @@ import com.buyzone.user_service.dto.request.UserRequestDto;
 import com.buyzone.user_service.dto.response.GenericResponseDto;
 import com.buyzone.user_service.dto.response.UserResponseDto;
 import com.buyzone.user_service.entity.User;
+import com.buyzone.user_service.enums.UserRole;
 import com.buyzone.user_service.exception.UserNotFoundException;
 import com.buyzone.user_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,6 +20,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public UserResponseDto registerUser(UserRequestDto userRequestDto) {
@@ -72,10 +77,15 @@ public class UserServiceImpl implements UserService {
     private User mapUserRequestDtoToUser(User user, UserRequestDto userRequestDto) {
        user.setName(userRequestDto.getName());
        user.setEmail(userRequestDto.getEmail());
-       user.setPassword(userRequestDto.getPassword());
+       user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
        user.setPhone(userRequestDto.getPhone());
        user.setAddress(userRequestDto.getAddress());
        user.setGender(userRequestDto.getGender());
+       user.setRoles(userRequestDto.getRoles());
+
+       for(UserRole role : userRequestDto.getRoles()) {
+           System.out.println(role);
+       }
 
        return user;
     }
@@ -90,6 +100,7 @@ public class UserServiceImpl implements UserService {
         userResponseDto.setPhone(user.getPhone());
         userResponseDto.setAddress(user.getAddress());
         userResponseDto.setGender(user.getGender());
+        userResponseDto.setRoles(user.getRoles());
 
         return userResponseDto;
     }
