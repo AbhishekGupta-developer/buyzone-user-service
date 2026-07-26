@@ -1,5 +1,6 @@
 package com.buyzone.user_service.service;
 
+import com.buyzone.user_service.dto.event.UserRegistrationEventDto;
 import com.buyzone.user_service.dto.request.UserRequestDto;
 import com.buyzone.user_service.dto.response.GenericResponseDto;
 import com.buyzone.user_service.dto.response.UserResponseDto;
@@ -8,10 +9,10 @@ import com.buyzone.user_service.enums.UserRole;
 import com.buyzone.user_service.exception.UserNotFoundException;
 import com.buyzone.user_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,10 +25,21 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private KafkaTemplate<String, UserRegistrationEventDto> kafkaTemplate;
+
     @Override
     public UserResponseDto registerUser(UserRequestDto userRequestDto) {
         User user = mapUserRequestDtoToUser(new User(), userRequestDto);
         userRepository.save(user);
+
+        UserRegistrationEventDto event = UserRegistrationEventDto.builder()
+                        .userId(user.getId().toString())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .build();
+
+        kafkaTemplate.send("user-registration", event);
         return mapUserToUserResponseDto(user);
     }
 
